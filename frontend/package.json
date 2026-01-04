@@ -1,0 +1,32 @@
+{
+  "name": "ronghe-frontend",
+  "version": "1.0.0",
+  "description": "融合平台前端 - Vue.js应用",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.1.0",
+    "axios": "^1.6.0",
+    "bootstrap": "^5.1.3",
+    "bootstrap-icons": "^1.7.2",
+    "element-plus": "^2.4.2",
+    "jszip": "^3.10.1",
+    "pinia": "^2.1.7",
+    "pinia-plugin-persistedstate": "^3.2.0",
+    "vue": "^3.3.8",
+    "vue-router": "^4.2.5",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.0",
+    "@vue/eslint-config-prettier": "^8.0.0",
+    "eslint": "^8.53.0",
+    "eslint-plugin-vue": "^9.18.1",
+    "prettier": "^3.1.0",
+    "vite": "^5.0.0"
+  }
+}

@@ -1,0 +1,958 @@
+﻿<template>
+  <div class="ad-campaign-container">
+    <!-- 椤甸潰鏍囬 -->
+    <div class="page-header">
+      <h1>骞垮憡鎶曟斁琛ㄦ牸鐢熸垚鍣?/h1>
+      <p>蹇€熺敓鎴怓acebook骞垮憡鎶曟斁琛ㄦ牸</p>
+    </div>
+
+    <!-- 琛ㄥ崟鍖哄煙 -->
+    <div class="form-container">
+      <form @submit.prevent="generateAllTables">
+        <!-- 鍟嗗搧淇℃伅 -->
+        <div class="form-section">
+          <h3>鍟嗗搧淇℃伅</h3>
+          <div class="form-group">
+            <label for="鍟嗗搧ID">鍟嗗搧ID</label>
+            <textarea id="鍟嗗搧ID" v-model="formData['鍟嗗搧ID']" placeholder="璇疯緭鍏ュ晢鍝両D锛屽涓敤绌烘牸鎴栨崲琛屽垎闅?></textarea>
+          </div>
+          <div class="form-group">
+            <label for="鍟嗗搧SPU">鍟嗗搧SPU</label>
+            <textarea id="鍟嗗搧SPU" v-model="formData['鍟嗗搧SPU']" placeholder="璇疯緭鍏ュ晢鍝丼PU锛屽涓敤绌烘牸鎴栨崲琛屽垎闅?></textarea>
+          </div>
+          <div class="form-group">
+            <label for="鍟嗗搧鍥剧墖閾炬帴">鍟嗗搧鍥剧墖閾炬帴</label>
+            <textarea id="鍟嗗搧鍥剧墖閾炬帴" v-model="formData['鍟嗗搧鍥剧墖閾炬帴']" @input="syncImageLinks" placeholder="璇疯緭鍏ュ晢鍝佸浘鐗囬摼鎺ワ紝澶氫釜鐢ㄧ┖鏍兼垨鎹㈣鍒嗛殧"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="涓撹緫閾炬帴">涓撹緫閾炬帴</label>
+            <input type="text" id="涓撹緫閾炬帴" v-model="formData['涓撹緫閾炬帴']" placeholder="璇疯緭鍏ヤ笓杈戦摼鎺?>
+          </div>
+          <div class="form-group">
+            <label for="骞垮憡鍩熷悕">骞垮憡鍩熷悕</label>
+            <input type="text" id="骞垮憡鍩熷悕" v-model="formData['骞垮憡鍩熷悕']" placeholder="璇疯緭鍏ュ箍鍛婂煙鍚?>
+          </div>
+        </div>
+
+        <!-- 鎶曟斁璁剧疆 -->
+        <div class="form-section">
+          <h3>鎶曟斁璁剧疆</h3>
+          <div class="form-group">
+            <label for="鎶曟斁鍥藉">鎶曟斁鍥藉</label>
+            <div class="dropdown-container">
+              <div class="dropdown-trigger" id="countryTrigger" @click="toggleCountryDropdown()">
+                <span id="countryDisplay">璇烽€夋嫨鎶曟斁鍥藉</span>
+                <span class="dropdown-arrow">鈻?/span>
+              </div>
+              <div class="checkbox-container" id="countryDropdown" style="display: none;">
+                <div class="country-section">
+                  <div class="section-title">甯歌鍥藉</div>
+                  <div class="checkbox-item" v-for="country in commonCountries" :key="country.code">
+                    <input type="checkbox" :id="'country_' + country.code" name="鎶曟斁鍥藉" :value="country.code" @change="updateCountryDisplay()">
+                    <label :for="'country_' + country.code">{{ country.code }} ({{ country.name }})</label>
+                  </div>
+                </div>
+                <div class="country-section">
+                  <div class="section-title">鍏朵粬鍥藉</div>
+                  <div class="checkbox-item" v-for="country in otherCountries" :key="country.code">
+                    <input type="checkbox" :id="'country_' + country.code" name="鎶曟斁鍥藉" :value="country.code" @change="updateCountryDisplay()">
+                    <label :for="'country_' + country.code">{{ country.code }} ({{ country.name }})</label>
+                  </div>
+                </div>
+                <div class="dropdown-actions">
+                  <button type="button" class="btn-cancel" @click="closeCountryDropdown()">鍙栨秷</button>
+                  <button type="button" class="btn-confirm" @click="closeCountryDropdown()">纭畾</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="鎺掗櫎鍥藉">鎺掗櫎鍥藉</label>
+            <div class="dropdown-container">
+              <div class="dropdown-trigger" id="excludeCountryTrigger" @click="toggleExcludeCountryDropdown()">
+                <span id="excludeCountryDisplay">璇烽€夋嫨鎺掗櫎鍥藉</span>
+                <span class="dropdown-arrow">鈻?/span>
+              </div>
+              <div class="checkbox-container" id="excludeCountryDropdown" style="display: none;">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="excludeSelectAll" @change="toggleAllExcludeCountries()">
+                  <label for="excludeSelectAll">鍏ㄩ€?/label>
+                </div>
+                <div class="checkbox-item" v-for="country in countries" :key="country.code">
+                  <input type="checkbox" :id="'exclude_country_' + country.code" name="鎺掗櫎鍥藉" :value="country.code" @change="updateExcludeCountryDisplay()">
+                  <label :for="'exclude_country_' + country.code">{{ country.code }} ({{ country.name }})</label>
+                </div>
+                <div class="dropdown-actions">
+                  <button type="button" class="btn-cancel" @click="closeExcludeCountryDropdown()">鍙栨秷</button>
+                  <button type="button" class="btn-confirm" @click="closeExcludeCountryDropdown()">纭畾</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>鎶曟斁鍖哄煙</label>
+            <div class="checkbox-group">
+              <div class="checkbox-item">
+                <input type="checkbox" id="worldwide" name="鎶曟斁鍖哄煙" value="worldwide" @change="handleRegionChange">
+                <label for="worldwide">鍏ㄧ悆</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="eea" name="鎶曟斁鍖哄煙" value="eea" @change="handleRegionChange">
+                <label for="eea">娆ф床缁忔祹鍖?/label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="nafta" name="鎶曟斁鍖哄煙" value="nafta" @change="handleRegionChange">
+                <label for="nafta">鍖楃編鑷敱璐告槗鍖?/label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 鍙椾紬璁剧疆 -->
+        <div class="form-section">
+          <h3>鍙椾紬璁剧疆</h3>
+          <div class="form-group">
+            <label for="骞撮緞鑼冨洿">骞撮緞鑼冨洿</label>
+            <div class="age-range">
+              <input type="number" id="鏈€灏忓勾榫? v-model="formData['鏈€灏忓勾榫?]" min="13" max="65" placeholder="鏈€灏忓勾榫?>
+              <span>-</span>
+              <input type="number" id="鏈€澶у勾榫? v-model="formData['鏈€澶у勾榫?]" min="13" max="65" placeholder="鏈€澶у勾榫?>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="鎬у埆">鎬у埆</label>
+            <div class="checkbox-group">
+              <div class="checkbox-item">
+                <input type="checkbox" id="male" name="鎬у埆" value="male">
+                <label for="male">鐢锋€?/label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="female" name="鎬у埆" value="female">
+                <label for="female">濂虫€?/label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="鍏磋叮">鍏磋叮</label>
+            <input type="text" id="鍏磋叮" v-model="formData['鍏磋叮']" placeholder="璇疯緭鍏ュ叴瓒ｅ叧閿瘝">
+          </div>
+        </div>
+
+        <!-- 棰勭畻璁剧疆 -->
+        <div class="form-section">
+          <h3>棰勭畻璁剧疆</h3>
+          <div class="form-group">
+            <label for="鏃ラ绠?>鏃ラ绠?/label>
+            <input type="number" id="鏃ラ绠? v-model="formData['鏃ラ绠?]" min="1" placeholder="璇疯緭鍏ユ棩棰勭畻">
+          </div>
+          <div class="form-group">
+            <label for="鍑轰环">鍑轰环</label>
+            <input type="number" id="鍑轰环" v-model="formData['鍑轰环']" min="0.01" step="0.01" placeholder="璇疯緭鍏ュ嚭浠?>
+          </div>
+        </div>
+
+        <!-- 鍏朵粬璁剧疆 -->
+        <div class="form-section">
+          <h3>鍏朵粬璁剧疆</h3>
+          <div class="form-group">
+            <label for="鍍忕礌">鍍忕礌</label>
+            <input type="text" id="鍍忕礌" v-model="formData['鍍忕礌']" placeholder="璇疯緭鍏ュ儚绱營D">
+          </div>
+          <div class="form-group">
+            <label for="浼樺寲鐩爣">浼樺寲鐩爣</label>
+            <select id="浼樺寲鐩爣" v-model="formData['浼樺寲鐩爣']">
+              <option value="">璇烽€夋嫨浼樺寲鐩爣</option>
+              <option value="reach">瑕嗙洊浜烘暟</option>
+              <option value="impressions">灞曠ず娆℃暟</option>
+              <option value="clicks">鐐瑰嚮娆℃暟</option>
+              <option value="conversions">杞寲娆℃暟</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 鎻愪氦鎸夐挳 -->
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" :disabled="generating">
+            {{ generating ? '鐢熸垚涓?..' : '鐢熸垚鎵€鏈夎〃鏍? }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import axios from 'axios'
+
+// 鍝嶅簲寮忔暟鎹?
+const generating = ref(false)
+
+// 琛ㄥ崟鏁版嵁
+const formData = reactive({
+  '鍟嗗搧ID': '',
+  '鍟嗗搧SPU': '',
+  '鍟嗗搧鍥剧墖閾炬帴': '',
+  '涓撹緫閾炬帴': '',
+  '骞垮憡鍩熷悕': '',
+  '鏈€灏忓勾榫?: '',
+  '鏈€澶у勾榫?: '',
+  '鍏磋叮': '',
+  '鏃ラ绠?: '',
+  '鍑轰环': '',
+  '鍍忕礌': '',
+  '浼樺寲鐩爣': ''
+})
+
+// 甯歌鍥藉
+// 鍏朵粬鍥藉
+// 鎺掗櫎鍥藉 - 189涓浗瀹?
+// 鍥藉鏁版嵁 - 189涓浗瀹?
+const countries = ref([
+// 鍥藉鏁版嵁 - 189涓浗瀹?
+const countries = ref([
+  { code: 'IN', name: '鍗板害' },
+  { code: 'AL', name: '闃垮皵宸村凹浜? },
+  { code: 'MO', name: '婢抽棬' },
+  { code: 'GE', name: '鏍奸瞾鍚変簹' },
+  { code: 'ZW', name: '娲ュ反甯冮煢' },
+  { code: 'AZ', name: '闃垮鎷滅枂' },
+  { code: 'MQ', name: '椹彁灏煎厠' },
+  { code: 'KZ', name: '鍝堣惃鍏嬫柉鍧? },
+  { code: 'NC', name: '鏂板杸閲屽灏间簹' },
+  { code: 'MD', name: '鎽╁皵澶氱摝' },
+  { code: 'PF', name: '娉曞睘娉㈠埄灏艰タ浜? },
+  { code: 'LB', name: '榛庡反瀚? },
+  { code: 'BM', name: '鐧炬厱澶? },
+  { code: 'MY', name: '椹潵瑗夸簹' },
+  { code: 'LC', name: '鍦ｅ崲瑗夸簹' },
+  { code: 'AD', name: '瀹夐亾灏? },
+  { code: 'AO', name: '瀹夊摜鎷? },
+  { code: 'RE', name: '鐣欏凹姹? },
+  { code: 'PA', name: '宸存嬁椹? },
+  { code: 'JO', name: '绾︽棪' },
+  { code: 'HK', name: '棣欐腐' },
+  { code: 'BG', name: '淇濆姞鍒╀簹' },
+  { code: 'CZ', name: '鎹峰厠' },
+  { code: 'SI', name: '鏂礇鏂囧凹浜? },
+  { code: 'LT', name: '绔嬮櫠瀹? },
+  { code: 'LK', name: '鏂噷鍏板崱' },
+  { code: 'MA', name: '鎽╂礇鍝? },
+  { code: 'EG', name: '鍩冨強' },
+  { code: 'RO', name: '缃楅┈灏间簹' },
+  { code: 'CR', name: '鍝ユ柉杈鹃粠鍔? },
+  { code: 'PY', name: '宸存媺鍦? },
+  { code: 'UY', name: '涔屾媺鍦? },
+  { code: 'PR', name: '娉㈠榛庡悇' },
+  { code: 'VN', name: '瓒婂崡' },
+  { code: 'MU', name: '姣涢噷姹傛柉' },
+  { code: 'OM', name: '闃挎浖' },
+  { code: 'MK', name: '椹叾椤? },
+  { code: 'EE', name: '鐖辨矙灏间簹' },
+  { code: 'NP', name: '灏兼硦灏? },
+  { code: 'ME', name: '榛戝北' },
+  { code: 'SN', name: '濉炲唴鍔犲皵' },
+  { code: 'UG', name: '涔屽共杈? },
+  { code: 'TZ', name: '鍧︽灏间簹' },
+  { code: 'LY', name: '鍒╂瘮浜? },
+  { code: 'MM', name: '缂呯敻' },
+  { code: 'NA', name: '绾崇背姣斾簹' },
+  { code: 'MG', name: '椹揪鍔犳柉鍔? },
+  { code: 'YE', name: '涔熼棬' },
+  { code: 'ZM', name: '璧炴瘮浜? },
+  { code: 'MW', name: '椹媺缁? },
+  { code: 'RW', name: '鍗㈡椇杈? },
+  { code: 'VI', name: '缇庡睘缁村皵浜兢宀? },
+  { code: 'VC', name: '鍦ｆ枃妫壒鍜屾牸鏋楃撼涓佹柉' },
+  { code: 'MN', name: '钂欏彜' },
+  { code: 'MZ', name: '鑾姣斿厠' },
+  { code: 'ML', name: '椹噷' },
+  { code: 'UZ', name: '涔屽吂鍒厠鏂潶' },
+  { code: 'MC', name: '鎽╃撼鍝? },
+  { code: 'TG', name: '澶氬摜' },
+  { code: 'SZ', name: '鏂▉澹叞' },
+  { code: 'LS', name: '鑾辩储鎵? },
+  { code: 'LA', name: '鑰佹対' },
+  { code: 'LI', name: '鍒楁敮鏁﹀＋鐧? },
+  { code: 'MP', name: '鍖楅┈閲屼簹绾崇兢宀? },
+  { code: 'SR', name: '鑻忛噷鍗? },
+  { code: 'SC', name: '濉炶垖灏? },
+  { code: 'VG', name: '鑻卞睘缁村皵浜兢宀? },
+  { code: 'TC', name: '鐗瑰厠鏂拰鍑鏂兢宀? },
+  { code: 'MR', name: '姣涢噷濉斿凹浜? },
+  { code: 'SM', name: '鍦ｉ┈鍔涜' },
+  { code: 'SL', name: '濉炴媺鍒╂槀' },
+  { code: 'NE', name: '灏兼棩灏? },
+  { code: 'YT', name: '椹害鐗? },
+  { code: 'LR', name: '鍒╂瘮閲屼簹' },
+  { code: 'TM', name: '鍦熷簱鏇兼柉鍧? },
+  { code: 'PK', name: '宸村熀鏂潶' },
+  { code: 'TJ', name: '濉斿悏鍏嬫柉鍧? },
+  { code: 'VU', name: '鐡﹀姫闃垮浘' },
+  { code: 'SB', name: '鎵€缃楅棬缇ゅ矝' },
+  { code: 'WS', name: '钀ㄦ懇浜? },
+  { code: 'TO', name: '姹ゅ姞' },
+  { code: 'PW', name: '甯曞姵' },
+  { code: 'SO', name: '绱㈤┈閲? },
+  { code: 'MH', name: '椹粛灏旂兢宀? },
+  { code: 'TD', name: '涔嶅緱' },
+  { code: 'ST', name: '鍦ｅ缇庡拰鏅灄瑗挎瘮' },
+  { code: 'TV', name: '鍥剧摝鍗? },
+  { code: 'NR', name: '鐟欓瞾' },
+  { code: 'TF', name: '娉曞睘鍗楅儴棰嗗湴' },
+  { code: 'MS', name: '钂欑壒濉炴媺鐗? },
+  { code: 'NU', name: '绾藉焹' },
+  { code: 'NF', name: '璇虹鍏嬪矝' },
+  { code: 'PN', name: '鐨壒鍑仼缇ゅ矝' },
+  { code: 'SH', name: '鍦ｈ但鍕掓嬁' },
+  { code: 'PM', name: '鍦ｇ毊鍩冨皵鍜屽瘑鍏嬮殕' },
+  { code: 'SS', name: '鍗楄嫃涓? },
+  { code: 'SJ', name: '鏂摝灏斿反鍜屾壃椹欢' },
+  { code: 'TL', name: '涓滃笣姹? },
+  { code: 'TK', name: '鎵樺厠鍔? },
+  { code: 'UM', name: '缇庡浗鏈湡澶栧皬宀涘笨' },
+  { code: 'WF', name: '鐡﹀埄鏂拰瀵屽浘绾? },
+  { code: 'VE', name: '濮斿唴鐟炴媺' },
+  { code: 'TH', name: '娉板浗' },
+  { code: 'NG', name: '灏兼棩鍒╀簹' },
+  { code: 'TT', name: '鐗圭珛灏艰揪鍜屽宸村摜' },
+  { code: 'SV', name: '钀ㄥ皵鐡﹀' },
+  { code: 'NI', name: '灏煎姞鎷夌摐' },
+  { code: 'PS', name: '宸村嫆鏂潶' },
+  { code: 'TN', name: '绐佸凹鏂? },
+  { code: 'MT', name: '椹€充粬' },
+  { code: 'MV', name: '椹皵浠ｅか' },
+  { code: 'BN', name: '鏂囪幈' },
+  { code: 'GP', name: '鐡滃痉缃楁櫘' },
+  { code: 'BB', name: '宸村反澶氭柉' },
+  { code: 'CI', name: '绉戠壒杩摝' },
+  { code: 'CM', name: '鍠€楹﹂殕' },
+  { code: 'BW', name: '鍗氳尐鐡︾撼' },
+  { code: 'ET', name: '鍩冨淇勬瘮浜? },
+  { code: 'FJ', name: '鏂愭祹' },
+  { code: 'BY', name: '鐧戒縿缃楁柉' },
+  { code: 'GU', name: '鍏冲矝' },
+  { code: 'HT', name: '娴峰湴' },
+  { code: 'KH', name: '鏌煍瀵? },
+  { code: 'AW', name: '闃块瞾宸? },
+  { code: 'AF', name: '闃垮瘜姹? },
+  { code: 'GY', name: '鍦簹閭? },
+  { code: 'AM', name: '浜氱編灏间簹' },
+  { code: 'AG', name: '瀹夋彁鐡滃拰宸村竷杈? },
+  { code: 'GM', name: '鍐堟瘮浜? },
+  { code: 'FO', name: '娉曠綏缇ゅ矝' },
+  { code: 'KY', name: '寮€鏇肩兢宀? },
+  { code: 'BJ', name: '璐濆畞' },
+  { code: 'GD', name: '鏍兼灄绾宠揪' },
+  { code: 'BZ', name: '浼埄鍏? },
+  { code: 'GF', name: '娉曞睘鍦簹閭? },
+  { code: 'DJ', name: '鍚夊竷鎻? },
+  { code: 'BF', name: '甯冨熀绾虫硶绱? },
+  { code: 'GL', name: '鏍奸櫟鍏? },
+  { code: 'GA', name: '鍔犺摤' },
+  { code: 'GI', name: '鐩村竷缃楅檧' },
+  { code: 'CD', name: '鍒氭灉姘戜富鍏卞拰鍥? },
+  { code: 'KG', name: '鍚夊皵鍚夋柉鏂潶' },
+  { code: 'PG', name: '宸村竷浜氭柊鍑犲唴浜? },
+  { code: 'BT', name: '涓嶄腹' },
+  { code: 'KN', name: '鍦ｅ熀鑼ㄥ拰灏肩淮鏂? },
+  { code: 'DM', name: '澶氱背灏煎厠' },
+  { code: 'CG', name: '鍒氭灉' },
+  { code: 'AI', name: '瀹夊湱鎷? },
+  { code: 'CV', name: '浣涘緱瑙? },
+  { code: 'GN', name: '鍑犲唴浜? },
+  { code: 'BI', name: '甯冮殕杩? },
+  { code: 'ER', name: '鍘勭珛鐗归噷浜? },
+  { code: 'AS', name: '缇庡睘钀ㄦ懇浜? },
+  { code: 'FK', name: '绂忓厠鍏扮兢宀? },
+  { code: 'GQ', name: '璧ら亾鍑犲唴浜? },
+  { code: 'KM', name: '绉戞懇缃? },
+  { code: 'FM', name: '瀵嗗厠缃楀凹瑗夸簹' },
+  { code: 'CF', name: '涓潪鍏卞拰鍥? },
+  { code: 'KI', name: '鍩洪噷宸存柉' },
+  { code: 'AN', name: '鑽峰睘瀹夌殑鍒楁柉' },
+  { code: 'AQ', name: '鍗楁瀬娲? },
+  { code: 'BV', name: '甯冮煢宀? },
+  { code: 'IO', name: '鑻卞睘鍗板害娲嬮鍦? },
+  { code: 'CX', name: '鍦ｈ癁宀? },
+  { code: 'CK', name: '搴撳厠缇ゅ矝' },
+  { code: 'GW', name: '鍑犲唴浜氭瘮缁? },
+  { code: 'HM', name: '璧痉宀涘拰楹﹀厠鍞愮撼缇ゅ矝' },
+  { code: 'GS', name: '鍗椾箶娌讳簹鍜屽崡妗戝▉濂囩兢宀? },
+  { code: 'EH', name: '瑗挎拻鍝堟媺' },
+  { code: 'DO', name: '澶氱背灏煎姞' },
+  { code: 'ID', name: '鍗板害灏艰タ浜? },
+  { code: 'PH', name: '鑿插緥瀹? },
+  { code: 'CN', name: '涓浗' },
+  { code: 'HR', name: '鍏嬬綏鍦颁簹' },
+  { code: 'TW', name: '鍙版咕' },
+  { code: 'CO', name: '鍝ヤ鸡姣斾簹' },
+  { code: 'BD', name: '瀛熷姞鎷夊浗' },
+  { code: 'KE', name: '鑲凹浜? },
+  { code: 'HU', name: '鍖堢墮鍒? },
+  { code: 'JM', name: '鐗欎拱鍔? },
+  { code: 'EC', name: '鍘勭摐澶氬皵' },
+  { code: 'BO', name: '鐜诲埄缁翠簹' },
+  { code: 'GT', name: '鍗卞湴椹媺' },
+  { code: 'HN', name: '娲兘鎷夋柉' },
+  { code: 'GH', name: '鍔犵撼' },
+  { code: 'BS', name: '宸村搱椹? },
+  { code: 'LV', name: '鎷夎劚缁翠簹' },
+  { code: 'IQ', name: '浼婃媺鍏? },
+  { code: 'DZ', name: '闃垮皵鍙婂埄浜? }
+])
+
+// 鎺掗櫎鍥藉鐩稿叧鍑芥暟
+const toggleExcludeCountryDropdown = () => {
+  const dropdown = document.getElementById('excludeCountryDropdown')
+  const trigger = document.getElementById('excludeCountryTrigger')
+
+  if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+    dropdown.style.display = 'block'
+    trigger.classList.add('active')
+  } else {
+    dropdown.style.display = 'none'
+    trigger.classList.remove('active')
+  }
+}
+
+const closeExcludeCountryDropdown = () => {
+  const dropdown = document.getElementById('excludeCountryDropdown')
+  const trigger = document.getElementById('excludeCountryTrigger')
+
+  dropdown.style.display = 'none'
+  trigger.classList.remove('active')
+}
+
+const toggleAllExcludeCountries = () => {
+  const selectAllCheckbox = document.getElementById('excludeSelectAll')
+  const countryCheckboxes = document.querySelectorAll('input[name="鎺掗櫎鍥藉"]')
+
+  countryCheckboxes.forEach(checkbox => {
+    checkbox.checked = selectAllCheckbox.checked
+  })
+  updateExcludeCountryDisplay()
+}
+
+const updateExcludeCountryDisplay = () => {
+  const selectedCountries = []
+  const countryCheckboxes = document.querySelectorAll('input[name="鎺掗櫎鍥藉"]:checked')
+
+  countryCheckboxes.forEach(checkbox => {
+    const label = document.querySelector(`label[for="${checkbox.id}"]`)
+    selectedCountries.push(label.textContent.split(' ')[0]) // 鍙彇鍥藉浠ｇ爜閮ㄥ垎
+  })
+
+  const display = document.getElementById('excludeCountryDisplay')
+  if (selectedCountries.length === 0) {
+    display.textContent = '璇烽€夋嫨鎺掗櫎鍥藉'
+  } else if (selectedCountries.length === 1) {
+    display.textContent = selectedCountries[0]
+  } else {
+    display.textContent = `宸查€夋嫨 ${selectedCountries.length} 涓浗瀹禶
+  }
+}
+
+// 鎶曟斁鍥藉鐩稿叧鍑芥暟
+const toggleCountryDropdown = () => {
+  const dropdown = document.getElementById('countryDropdown')
+  const trigger = document.getElementById('countryTrigger')
+
+  if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+    dropdown.style.display = 'block'
+    trigger.classList.add('active')
+  } else {
+    dropdown.style.display = 'none'
+    trigger.classList.remove('active')
+  }
+}
+
+const closeCountryDropdown = () => {
+  const dropdown = document.getElementById('countryDropdown')
+  const trigger = document.getElementById('countryTrigger')
+
+  dropdown.style.display = 'none'
+  trigger.classList.remove('active')
+}
+
+const updateCountryDisplay = () => {
+  const selectedCountries = []
+  const countryCheckboxes = document.querySelectorAll('input[name="鎶曟斁鍥藉"]:checked')
+
+  countryCheckboxes.forEach(checkbox => {
+    const label = document.querySelector(`label[for="${checkbox.id}"]`)
+    selectedCountries.push(label.textContent.split(' ')[0]) // 鍙彇鍥藉浠ｇ爜閮ㄥ垎
+  })
+
+  const display = document.getElementById('countryDisplay')
+  if (selectedCountries.length === 0) {
+    display.textContent = '璇烽€夋嫨鎶曟斁鍥藉'
+  } else if (selectedCountries.length === 1) {
+    display.textContent = selectedCountries[0]
+  } else {
+    display.textContent = `宸查€夋嫨 ${selectedCountries.length} 涓浗瀹禶
+  }
+}
+
+// 鍖哄煙閫夋嫨澶勭悊
+const handleRegionChange = (event) => {
+  const checkbox = event.target
+  const worldwideCheckbox = document.querySelector('input[name="鎶曟斁鍖哄煙"][value="worldwide"]')
+  const eeaCheckbox = document.querySelector('input[name="鎶曟斁鍖哄煙"][value="eea"]')
+  const naftaCheckbox = document.querySelector('input[name="鎶曟斁鍖哄煙"][value="nafta"]')
+
+  if (checkbox.value === 'worldwide' && checkbox.checked) {
+    eeaCheckbox.checked = false
+    naftaCheckbox.checked = false
+  } else if ((checkbox.value === 'eea' || checkbox.value === 'nafta') && checkbox.checked) {
+    worldwideCheckbox.checked = false
+  }
+}
+
+// 鍥剧墖鍚屾鍔熻兘
+const syncImageLinks = async () => {
+  const imageLinks = formData['鍟嗗搧鍥剧墖閾炬帴']
+  if (!imageLinks || !imageLinks.trim()) return
+
+  try {
+    // 鎻愬彇鍥剧墖閾炬帴
+    const links = imageLinks.split(/[\s\n]+/).filter(link => 
+      link.trim() && isValidImageUrl(link.trim())
+    )
+
+    if (links.length > 0) {
+      // 鍙戦€佸埌API Gateway
+      await axios.post('/api/image-links', { links })
+      console.log('鍥剧墖閾炬帴宸插悓姝?', links)
+      showNotification('鍥剧墖閾炬帴宸插悓姝ュ埌瑙嗛鏈嶅姟', 'success')
+    }
+  } catch (error) {
+    console.error('鍚屾鍥剧墖閾炬帴澶辫触:', error)
+    showNotification('鍚屾鍥剧墖閾炬帴澶辫触', 'error')
+  }
+}
+
+// 楠岃瘉鍥剧墖URL
+const isValidImageUrl = (url) => {
+  try {
+    const urlObj = new URL(url)
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp']
+    const pathname = urlObj.pathname.toLowerCase()
+    return imageExtensions.some(ext => pathname.includes(ext)) || 
+           urlObj.hostname.includes('img') ||
+           urlObj.hostname.includes('image')
+  } catch {
+    return false
+  }
+}
+
+// 鏄剧ず閫氱煡
+const showNotification = (message, type = 'info') => {
+  // 绠€鍗曠殑閫氱煡瀹炵幇
+  const notification = document.createElement('div')
+  notification.className = `notification notification-${type}`
+  notification.textContent = message
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+    color: white;
+    border-radius: 4px;
+    z-index: 1000;
+    font-size: 14px;
+  `
+  
+  document.body.appendChild(notification)
+  
+  setTimeout(() => {
+    notification.remove()
+  }, 3000)
+}
+
+// 鐢熸垚琛ㄦ牸
+const generateAllTables = async () => {
+  generating.value = true
+  
+  try {
+    // 鑾峰彇琛ㄥ崟鏁版嵁
+    const data = getFormData()
+    
+    // 鍙戦€佸埌API Gateway
+    const response = await axios.post('/api/ad-campaign/api/generate/batch-both-tables', data)
+    
+    if (response.data.success) {
+      showNotification('琛ㄦ牸鐢熸垚鎴愬姛锛?, 'success')
+      
+      // 涓嬭浇鏂囦欢
+      if (response.data.filename) {
+        downloadFile(response.data.data, response.data.filename)
+      }
+    } else {
+      showNotification('琛ㄦ牸鐢熸垚澶辫触: ' + response.data.error, 'error')
+    }
+  } catch (error) {
+    console.error('鐢熸垚琛ㄦ牸澶辫触:', error)
+    showNotification('鐢熸垚琛ㄦ牸澶辫触: ' + error.message, 'error')
+  } finally {
+    generating.value = false
+  }
+}
+
+// 鑾峰彇琛ㄥ崟鏁版嵁
+const getFormData = () => {
+  const data = { ...formData }
+  
+  // 鑾峰彇閫変腑鐨勬姇鏀惧浗瀹?
+  const selectedCountries = []
+  const countryCheckboxes = document.querySelectorAll('input[name="鎶曟斁鍥藉"]:checked')
+  countryCheckboxes.forEach(checkbox => {
+    selectedCountries.push(checkbox.value)
+  })
+  data['鎶曟斁鍥藉'] = selectedCountries.join(',')
+  
+  // 鑾峰彇閫変腑鐨勬帓闄ゅ浗瀹?
+  const selectedExcludeCountries = []
+  const excludeCountryCheckboxes = document.querySelectorAll('input[name="鎺掗櫎鍥藉"]:checked')
+  excludeCountryCheckboxes.forEach(checkbox => {
+    selectedExcludeCountries.push(checkbox.value)
+  })
+  data['鎺掗櫎鍥藉'] = selectedExcludeCountries.join(',')
+  
+  // 鑾峰彇閫変腑鐨勬姇鏀惧尯鍩?
+  const selectedRegions = []
+  const regionCheckboxes = document.querySelectorAll('input[name="鎶曟斁鍖哄煙"]:checked')
+  regionCheckboxes.forEach(checkbox => {
+    selectedRegions.push(checkbox.value)
+  })
+  data['鎶曟斁鍖哄煙'] = selectedRegions.join(',')
+  
+  // 鑾峰彇閫変腑鐨勬€у埆
+  const selectedGenders = []
+  const genderCheckboxes = document.querySelectorAll('input[name="鎬у埆"]:checked')
+  genderCheckboxes.forEach(checkbox => {
+    selectedGenders.push(checkbox.value)
+  })
+  data['鎬у埆'] = selectedGenders.join(',')
+  
+  return data
+}
+
+// 涓嬭浇鏂囦欢
+const downloadFile = (response, filename) => {
+  const blob = new Blob([response], { 
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+  })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+}
+
+onMounted(() => {
+  // 鍒濆鍖栨姇鏀惧浗瀹堕€夋嫨
+  const regionCheckboxes = document.querySelectorAll('input[name="鎶曟斁鍖哄煙"]')
+  regionCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', handleRegionChange)
+  })
+})
+</script>
+
+<style scoped>
+.ad-campaign-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.page-header h1 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 2.5rem;
+}
+
+.page-header p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.form-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+.form-section {
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.form-section h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #34495e;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.age-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.age-range input {
+  flex: 1;
+}
+
+.age-range span {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.checkbox-item label {
+  margin: 0;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.dropdown-container {
+  position: relative;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 15px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  background: white;
+}
+
+.dropdown-trigger:hover {
+  border-color: #3498db;
+}
+
+.dropdown-trigger.active {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.dropdown-arrow {
+  color: #7f8c8d;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-trigger.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.checkbox-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e1e8ed;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.country-section {
+  padding: 15px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.country-section:last-child {
+  border-bottom: none;
+}
+
+.section-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.checkbox-container .checkbox-item {
+  margin-bottom: 8px;
+}
+
+.checkbox-container .checkbox-item:last-child {
+  margin-bottom: 0;
+}
+
+.dropdown-actions {
+  padding: 15px;
+  border-top: 1px solid #ecf0f1;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-confirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cancel {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #7f8c8d;
+}
+
+.btn-confirm {
+  background: #3498db;
+  color: white;
+}
+
+.btn-confirm:hover {
+  background: #2980b9;
+}
+
+.form-actions {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 鍝嶅簲寮忚璁?*/
+@media (max-width: 768px) {
+  .ad-campaign-container {
+    padding: 15px;
+  }
+  
+  .form-container {
+    padding: 20px;
+  }
+  
+  .page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .checkbox-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .age-range {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .age-range span {
+    text-align: center;
+  }
+}
+</style>

@@ -1,0 +1,10 @@
+手动启动步骤（分别开三个命令行窗口执行）：
+1) Video Service（端口 18090）
+打开“命令提示符”，执行：
+cd /d D:\ronghe-platform\video-serviceset FFMPEG_PATH=C:\ffmpeg\ffmpeg-8.0-essentials_build\bin\ffmpeg.exepython -u -B app.py
+2) API Gateway（端口 18083）
+新开一个命令提示符，执行：
+cd /d D:\ronghe-platform\api-gatewaynode server.js
+3) Frontend Dev Server（端口 18080）
+再开一个命令提示符，执行：
+cd /d D:\ronghe-platform\frontendnpm run dev

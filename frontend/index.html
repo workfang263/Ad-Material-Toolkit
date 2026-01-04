@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Bootstrap CSS 将在 main.js 中通过 import 加载，无需CDN -->
+    <!-- 放宽CSP策略以支持必要的资源 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: http:; connect-src 'self' https: http: ws: wss:; frame-src 'self' http://192.168.0.67:5001 http://192.168.0.67:*">
+    <title>融合平台 - 统一管理系统</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    <!-- Bootstrap JS 将在 main.js 中通过 import 加载，无需CDN -->
+  </body>
+</html>
